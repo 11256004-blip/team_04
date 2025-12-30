@@ -1,0 +1,62 @@
+{% extends 'grades/base.html' %}
+
+{% block content %}
+  <a href="{% url 'grades:main' %}" class="btn btn-small" style="margin-bottom: 20px;">⬅️ 回到主頁</a>
+  
+  <div class="course-card">
+    <h2>📚 {{ course.name }}</h2>
+    <div class="info-card">
+      <p><strong>課程代碼：</strong>{{ course.code }}</p>
+      <p><strong>👨‍🏫 任課老師：</strong>{{ course.teacher }}</p>
+    </div>
+  </div>
+
+  <h3>👥 修課學生名單</h3>
+  {% if enrollments %}
+    <table>
+      <thead>
+        <tr>
+          <th>學生姓名</th>
+          <th style="text-align: center;">期中成績</th>
+          <th style="text-align: center;">期末成績</th>
+          <th style="text-align: center;">平均成績</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in enrollments %}
+          <tr>
+            <td>
+              <strong>{{ e.student.username }}</strong>
+            </td>
+            <td style="text-align: center;">
+              {% if e.midterm_score %}
+                {{ e.midterm_score }}
+              {% else %}
+                <span style="color: #999;">未輸入</span>
+              {% endif %}
+            </td>
+            <td style="text-align: center;">
+              {% if e.final_score %}
+                {{ e.final_score }}
+              {% else %}
+                <span style="color: #999;">未輸入</span>
+              {% endif %}
+            </td>
+            <td style="text-align: center;">
+              {% if e.average %}
+                <strong style="color: #667eea;">{{ e.average|floatformat:2 }}</strong>
+              {% else %}
+                <span style="color: #999;">-</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon">📭</div>
+      <p style="font-size: 1.2em; color: #666;">目前尚無學生修讀此課程</p>
+    </div>
+  {% endif %}
+{% endblock %}
