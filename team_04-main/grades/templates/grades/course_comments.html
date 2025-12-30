@@ -1,0 +1,166 @@
+{% extends 'grades/base.html' %}
+
+{% block title %}{{ course.name }} - 課程留言{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 40px auto;">
+    <!-- 課程標題 -->
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 15px; margin-bottom: 30px;">
+        <h1 style="margin: 0 0 10px 0; font-size: 2em;">
+            📚 {{ course.name }}
+        </h1>
+        <p style="margin: 0; opacity: 0.9;">
+            課程代碼: <strong>{{ course.code }}</strong>
+        </p>
+        {% if course.teacher %}
+            <p style="margin: 5px 0 0 0; opacity: 0.9;">
+                授課教師: <strong>{{ course.teacher.get_full_name|default:course.teacher.username }}</strong>
+            </p>
+        {% endif %}
+    </div>
+    
+    <!-- 統計資訊 -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 30px;">
+        <div style="background: white; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <p style="color: #667eea; font-size: 1.8em; font-weight: bold; margin: 0;">{{ comments.count }}</p>
+            <p style="color: #666; font-size: 0.9em; margin: 5px 0 0 0;">課程留言</p>
+        </div>
+        {% if is_enrolled %}
+            <div style="background: white; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <p style="color: #070; font-size: 1.8em; font-weight: bold; margin: 0;">✓</p>
+                <p style="color: #666; font-size: 0.9em; margin: 5px 0 0 0;">已選課</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- 操作按鈕 -->
+    {% if is_enrolled %}
+        <div style="display: flex; gap: 10px; margin-bottom: 30px; flex-wrap: wrap;">
+            {% if user_comment %}
+                <a href="{% url 'grades:edit_comment' user_comment.id %}" 
+                   style="background: linear-gradient(135deg, #ff9800 0%, #f5576c 100%); color: white; padding: 12px 25px; border-radius: 25px; text-decoration: none; font-weight: 500; display: inline-block; transition: transform 0.3s, box-shadow 0.3s;">
+                    ✏️ 編輯我的留言
+                </a>
+                <span style="color: #999; padding: 12px 15px; background: #f0f0f0; border-radius: 25px;">
+                    已發表 · {{ user_comment.updated_at|date:"m-d H:i" }}
+                </span>
+            {% else %}
+                <a href="{% url 'grades:add_comment' course.id %}" 
+                   style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 25px; border-radius: 25px; text-decoration: none; font-weight: 500; display: inline-block; transition: transform 0.3s, box-shadow 0.3s;">
+                    💬 新增留言
+                </a>
+            {% endif %}
+            <a href="{% url 'grades:course_detail' course.id %}" 
+               style="background: #999; color: white; padding: 12px 25px; border-radius: 25px; text-decoration: none; font-weight: 500; display: inline-block; transition: transform 0.3s, box-shadow 0.3s;">
+                ← 返回課程
+            </a>
+        </div>
+    {% else %}
+        <div style="background: #fff3cd; padding: 15px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #ff9800;">
+            <p style="color: #856404; margin: 0;">
+                ⚠️ 請先選課才能留言。<a href="{% url 'grades:enroll' %}" style="color: #ff9800; text-decoration: underline; font-weight: bold;">點擊選課</a>
+            </p>
+        </div>
+    {% endif %}
+    
+    <!-- 留言列表 -->
+    <div>
+        {% if comments %}
+            <h3 style="color: #333; margin-bottom: 20px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">
+                🗨️ 全部留言 ({{ comments.count }})
+            </h3>
+            
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                {% for comment in comments %}
+                    <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-left: 4px solid {% if comment.student == request.user %}#667eea{% else %}#ddd{% endif %};">
+                        <!-- 留言頭部 -->
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <!-- 頭像 -->
+                                {% if comment.student.profile.avatar %}
+                                    <img src="{{ comment.student.profile.avatar.url }}" 
+                                         alt="{{ comment.student.username }}" 
+                                         style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                                {% else %}
+                                    <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2em;">
+                                        👤
+                                    </div>
+                                {% endif %}
+                                
+                                <!-- 用戶信息 -->
+                                <div>
+                                    <p style="font-weight: bold; margin: 0; color: #333;">
+                                        {{ comment.student.get_full_name|default:comment.student.username }}
+                                        {% if comment.student == request.user %}
+                                            <span style="background: #667eea; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; margin-left: 8px;">我</span>
+                                        {% endif %}
+                                    </p>
+                                    <p style="color: #999; font-size: 0.85em; margin: 0;">
+                                        {% if comment.updated_at > comment.created_at %}
+                                            編輯於 {{ comment.updated_at|date:"Y-m-d H:i" }}
+                                        {% else %}
+                                            {{ comment.created_at|date:"Y-m-d H:i" }}
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <!-- 操作按鈕 -->
+                            {% if comment.student == request.user and is_enrolled %}
+                                <div style="display: flex; gap: 5px;">
+                                    <a href="{% url 'grades:edit_comment' comment.id %}" 
+                                       style="background: #ff9800; color: white; padding: 6px 12px; border-radius: 5px; text-decoration: none; font-size: 0.85em; transition: background 0.3s;">
+                                        ✏️
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- 留言內容 -->
+                        <div style="background: #f8f9ff; padding: 15px; border-radius: 8px; line-height: 1.6; color: #333; word-wrap: break-word;">
+                            {{ comment.content|linebreaks }}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <!-- 無留言提示 -->
+            <div style="text-align: center; padding: 40px; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <p style="font-size: 3em; margin: 0;">💭</p>
+                <p style="color: #999; font-size: 1.1em; margin: 15px 0 0 0;">
+                    暫無留言
+                </p>
+                {% if is_enrolled %}
+                    <p style="color: #666; margin: 10px 0 0 0;">
+                        成為第一個發表留言的人吧！
+                    </p>
+                    <a href="{% url 'grades:add_comment' course.id %}" 
+                       style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 25px; border-radius: 25px; text-decoration: none; font-weight: 500; display: inline-block; margin-top: 15px; transition: transform 0.3s, box-shadow 0.3s;">
+                        💬 發表第一個留言
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    a:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+</style>
+
+<script>
+    // 光滑的滾動效果
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    });
+</script>
+{% endblock %}

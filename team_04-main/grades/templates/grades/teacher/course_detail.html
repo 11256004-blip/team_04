@@ -1,0 +1,73 @@
+{% extends "grades/base.html" %}
+
+{% block title %}{{ course.name }} - 課程管理{% endblock %}
+
+{% block content %}
+<h2>📖 課程管理: {{ course.name }}</h2>
+
+<div class="btn-group">
+    <a href="{% url 'grades:teacher_dashboard' %}" class="btn btn-secondary">← 返回儀表板</a>
+</div>
+
+<!-- Course Info Card -->
+<div class="info-card">
+    <h3>課程信息</h3>
+    <p><strong>課程名稱:</strong> {{ course.name }}</p>
+    <p><strong>課程代碼:</strong> <code>{{ course.code }}</code></p>
+    <p><strong>描述:</strong> {{ course.description|default:"無" }}</p>
+    <p style="text-align: center; font-size: 1.2em; color: #667eea; font-weight: bold; margin-top: 20px;">
+        已註冊學生: {{ enrollments|length }} 人
+    </p>
+</div>
+
+<!-- Student Grades -->
+<h3>學生成績</h3>
+{% if enrollments %}
+    <table>
+        <thead>
+            <tr>
+                <th>學生名稱</th>
+                <th>學生用戶名</th>
+                <th>期中成績</th>
+                <th>期末成績</th>
+                <th>平均成績</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for enrollment in enrollments %}
+            <tr>
+                <td>{{ enrollment.student.get_full_name|default:"-" }}</td>
+                <td>{{ enrollment.student.username }}</td>
+                <td>
+                    <form method="POST" action="{% url 'grades:teacher_update_grade' enrollment.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="final_score" value="{{ enrollment.final_score|default:'' }}">
+                        <input type="number" name="midterm_score" value="{{ enrollment.midterm_score|default:'' }}" step="0.1" min="0" max="100" style="width: 80px; padding: 6px; border: 1px solid #ddd; border-radius: 4px;" placeholder="輸入分數">
+                        <button type="submit" style="padding: 6px 8px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">💾</button>
+                    </form>
+                </td>
+                <td>
+                    <form method="POST" action="{% url 'grades:teacher_update_grade' enrollment.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="midterm_score" value="{{ enrollment.midterm_score|default:'' }}">
+                        <input type="number" name="final_score" value="{{ enrollment.final_score|default:'' }}" step="0.1" min="0" max="100" style="width: 80px; padding: 6px; border: 1px solid #ddd; border-radius: 4px;" placeholder="輸入分數">
+                        <button type="submit" style="padding: 6px 8px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">💾</button>
+                    </form>
+                </td>
+                <td>
+                    {% if enrollment.average %}
+                        <strong>{{ enrollment.average|floatformat:1 }}</strong>
+                    {% else %}
+                        <span style="color: #999;">-</span>
+                    {% endif %}
+                </td>
+                <td></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p style="color: #999; text-align: center;">此課程尚無學生註冊</p>
+{% endif %}
+{% endblock %}

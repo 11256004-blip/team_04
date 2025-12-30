@@ -1,0 +1,49 @@
+{% extends "grades/base.html" %}
+
+{% block title %}管理課程{% endblock %}
+
+{% block content %}
+<h2>📚 管理課程</h2>
+
+<div class="btn-group">
+    <a href="{% url 'grades:admin_dashboard' %}" class="btn btn-secondary">← 返回儀表板</a>
+    <a href="{% url 'grades:add_course' %}" class="btn">➕ 新增課程</a>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>課程名稱</th>
+            <th>課程代碼</th>
+            <th>教師</th>
+            <th>註冊人數</th>
+            <th>創建日期</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for course in courses %}
+        <tr>
+            <td>{{ course.id }}</td>
+            <td>{{ course.name }}</td>
+            <td><code>{{ course.code }}</code></td>
+            <td>{{ course.teacher.get_full_name|default:course.teacher.username|default:"未分配" }}</td>
+            <td>
+                <span style="background-color: #667eea; color: white; padding: 4px 8px; border-radius: 4px;">
+                    {{ course.enrollments.count }}
+                </span>
+            </td>
+            <td>{{ course.created_at|date:"Y-m-d" }}</td>
+            <td>
+                <a href="{% url 'grades:admin_course_detail' course.id %}" class="btn btn-small">查看</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="7" style="text-align: center; color: #999;">尚無課程</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "grades/base.html" %}
+
+{% block title %}{{ target_user.username }} - 用戶詳情{% endblock %}
+
+{% block content %}
+<h2>👤 用戶詳情: {{ target_user.username }}</h2>
+
+<div class="btn-group">
+    <a href="{% url 'grades:admin_users' %}" class="btn btn-secondary">← 返回用戶列表</a>
+</div>
+
+<!-- User Info Card -->
+<div class="info-card">
+    <h3>基本信息</h3>
+    <p><strong>用戶名:</strong> {{ target_user.username }}</p>
+    <p><strong>姓名:</strong> {{ target_user.get_full_name|default:"未設定" }}</p>
+    <p><strong>電郵:</strong> {{ target_user.email|default:"未設定" }}</p>
+    <p><strong>加入日期:</strong> {{ target_user.date_joined|date:"Y-m-d" }}</p>
+    <p><strong>最後登入:</strong> {{ target_user.last_login|default:"從未登入" }}</p>
+</div>
+
+<div class="info-card">
+    <h3>角色信息</h3>
+    {% if target_user.profile %}
+        <p><strong>角色:</strong> <span style="background-color: #667eea; color: white; padding: 4px 8px; border-radius: 4px;">{{ target_user.profile.get_role_display }}</span></p>
+        <p><strong>部門:</strong> {{ target_user.profile.department|default:"未設定" }}</p>
+        <p><strong>建立於:</strong> {{ target_user.profile.created_at|date:"Y-m-d H:i" }}</p>
+    {% else %}
+        <p style="color: #f5576c;">⚠️ 此用戶尚未設定角色。請在 Django 管理後台設定。</p>
+    {% endif %}
+</div>
+
+<!-- Enrollments -->
+<h3>課程註冊 (共 {{ enrollments|length }} 門)</h3>
+{% if enrollments %}
+    <table>
+        <thead>
+            <tr>
+                <th>課程名稱</th>
+                <th>課程代碼</th>
+                <th>期中成績</th>
+                <th>期末成績</th>
+                <th>平均成績</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for enrollment in enrollments %}
+            <tr>
+                <td>{{ enrollment.course.name }}</td>
+                <td>{{ enrollment.course.code }}</td>
+                <td>{{ enrollment.midterm_score|default:"-" }}</td>
+                <td>{{ enrollment.final_score|default:"-" }}</td>
+                <td>
+                    {% if enrollment.average %}
+                        <strong>{{ enrollment.average|floatformat:1 }}</strong>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p style="color: #999; text-align: center;">此用戶未註冊任何課程</p>
+{% endif %}
+{% endblock %}

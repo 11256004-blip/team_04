@@ -1,0 +1,101 @@
+{% extends 'grades/base.html' %}
+
+{% block content %}
+  {% if message %}
+    <div class="message error">
+      ⚠️ {{ message }}
+    </div>
+  {% endif %}
+
+  {% if student %}
+    <h2>👨‍🎓 {{ student.username }} 的修課資料</h2>
+    
+    <div class="btn-group">
+      <a href="{% url 'grades:add_course' %}" class="btn">➕ 新增課程</a>
+      <a href="{% url 'grades:enroll' %}" class="btn btn-secondary">📝 加選課程</a>
+      <a href="{% url 'grades:edit_profile' %}" class="btn btn-secondary">👤 修改個人資訊</a>
+    </div>
+
+    <h3>📖 修課列表</h3>
+    {% if enrollments %}
+      <table>
+        <thead>
+          <tr>
+            <th>課程名稱</th>
+            <th style="text-align: center;">期中成績</th>
+            <th style="text-align: center;">期末成績</th>
+            <th style="text-align: center;">平均</th>
+            <th style="text-align: center;">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in enrollments %}
+            <tr>
+              <td>
+                <a href="{% url 'grades:course_detail' e.course.id %}">
+                  📚 {{ e.course.name }}
+                </a>
+              </td>
+              <td style="text-align: center;">
+                {% if e.midterm_score %}
+                  <strong>{{ e.midterm_score }}</strong>
+                {% else %}
+                  <span style="color: #999;">-</span>
+                {% endif %}
+              </td>
+              <td style="text-align: center;">
+                {% if e.final_score %}
+                  <strong>{{ e.final_score }}</strong>
+                {% else %}
+                  <span style="color: #999;">-</span>
+                {% endif %}
+              </td>
+              <td style="text-align: center;">
+                {% if e.average %}
+                  <strong style="color: #667eea;">{{ e.average|floatformat:2 }}</strong>
+                {% else %}
+                  <span style="color: #999;">-</span>
+                {% endif %}
+              </td>
+              <td style="text-align: center;">
+                <div style="display: flex; gap: 5px; justify-content: center; flex-wrap: wrap;">
+                  <a href="{% url 'grades:unenroll' e.id %}" class="btn btn-danger btn-small" 
+                     onclick="return confirm('確定要退選「{{ e.course.name }}」嗎？')">
+                    ❌ 退選
+                  </a>
+                  <a href="{% url 'grades:course_comments' e.course.id %}" class="btn btn-small" 
+                     style="background: #667eea; color: white; padding: 6px 12px; border-radius: 5px; text-decoration: none; font-size: 0.85em;">
+                    💬
+                  </a>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="stats-card">
+        <h4>📊 學期總成績</h4>
+        <div class="stats-value">
+          {% if overall_avg %}
+            {{ overall_avg|floatformat:2 }} 分
+          {% else %}
+            尚無成績
+          {% endif %}
+        </div>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon">📭</div>
+        <p style="font-size: 1.2em; color: #666;">尚無修課紀錄</p>
+        <p>點擊上方「加選課程」開始選課吧！</p>
+      </div>
+    {% endif %}
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon">👋</div>
+      <h2>歡迎使用成績系統</h2>
+      <p>請先建立使用者與課程資料。</p>
+    </div>
+  {% endif %}
+{% endblock %}

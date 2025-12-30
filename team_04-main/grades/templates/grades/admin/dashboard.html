@@ -1,0 +1,77 @@
+{% extends "grades/base.html" %}
+
+{% block title %}管理員儀表板{% endblock %}
+
+{% block content %}
+<h2>🔐 管理員儀表板</h2>
+
+<!-- Statistics Row -->
+<div class="btn-group">
+    <div class="course-card" style="flex: 1; text-align: center;">
+        <h4 style="color: #667eea;">學生</h4>
+        <h3 style="color: #667eea; font-size: 2em;">{{ stats.total_students }}</h3>
+    </div>
+    <div class="course-card" style="flex: 1; text-align: center;">
+        <h4 style="color: #667eea;">教師</h4>
+        <h3 style="color: #667eea; font-size: 2em;">{{ stats.total_teachers }}</h3>
+    </div>
+    <div class="course-card" style="flex: 1; text-align: center;">
+        <h4 style="color: #667eea;">課程</h4>
+        <h3 style="color: #667eea; font-size: 2em;">{{ stats.total_courses }}</h3>
+    </div>
+    <div class="course-card" style="flex: 1; text-align: center;">
+        <h4 style="color: #667eea;">註冊</h4>
+        <h3 style="color: #667eea; font-size: 2em;">{{ stats.total_enrollments }}</h3>
+    </div>
+</div>
+
+<!-- Management Links -->
+<h3>管理</h3>
+<div class="btn-group">
+    <a href="{% url 'grades:admin_users' %}" class="btn">👥 管理使用者</a>
+    <a href="{% url 'grades:admin_courses' %}" class="btn">📚 管理課程</a>
+    <a href="/admin/" class="btn btn-secondary">⚙️ Django 管理後台</a>
+    <a href="{% url 'grades:main' %}" class="btn btn-secondary">🏠 返回主頁</a>
+</div>
+
+<!-- Recent Enrollments -->
+<h3>最近的註冊</h3>
+<table>
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>學生</th>
+            <th>課程</th>
+            <th>期中成績</th>
+            <th>期末成績</th>
+            <th>平均</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for enrollment in recent_enrollments %}
+        <tr>
+            <td>{{ enrollment.id }}</td>
+            <td>{{ enrollment.student.username }}</td>
+            <td>
+                <a href="{% url 'grades:admin_course_detail' enrollment.course.id %}">
+                    {{ enrollment.course.name }}
+                </a>
+            </td>
+            <td>{{ enrollment.midterm_score|default:"-" }}</td>
+            <td>{{ enrollment.final_score|default:"-" }}</td>
+            <td>
+                {% if enrollment.average %}
+                    <strong>{{ enrollment.average|floatformat:1 }}</strong>
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6" style="text-align: center; color: #999;">尚無註冊</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

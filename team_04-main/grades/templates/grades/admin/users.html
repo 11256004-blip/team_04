@@ -1,0 +1,62 @@
+{% extends "grades/base.html" %}
+
+{% block title %}管理使用者{% endblock %}
+
+{% block content %}
+<h2>👥 管理使用者</h2>
+
+<div class="btn-group">
+    <a href="{% url 'grades:admin_dashboard' %}" class="btn btn-secondary">← 返回儀表板</a>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>用戶名</th>
+            <th>姓名</th>
+            <th>電子郵件</th>
+            <th>角色</th>
+            <th>部門</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.username }}</td>
+            <td>{{ user.get_full_name|default:"-" }}</td>
+            <td>{{ user.email|default:"-" }}</td>
+            <td>
+                {% if user.profile %}
+                    {% if user.profile.role == 'admin' %}
+                        <span style="background-color: #f5576c; color: white; padding: 4px 8px; border-radius: 4px;">
+                            {{ user.profile.get_role_display }}
+                        </span>
+                    {% elif user.profile.role == 'teacher' %}
+                        <span style="background-color: #667eea; color: white; padding: 4px 8px; border-radius: 4px;">
+                            {{ user.profile.get_role_display }}
+                        </span>
+                    {% else %}
+                        <span style="background-color: #51cf66; color: white; padding: 4px 8px; border-radius: 4px;">
+                            {{ user.profile.get_role_display }}
+                        </span>
+                    {% endif %}
+                {% else %}
+                    <span style="background-color: #999; color: white; padding: 4px 8px; border-radius: 4px;">
+                        未設定
+                    </span>
+                {% endif %}
+            </td>
+            <td>{{ user.profile.department|default:"-" }}</td>
+            <td>
+                <a href="{% url 'grades:admin_user_detail' user.id %}" class="btn btn-small">查看</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6" style="text-align: center; color: #999;">尚無使用者</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

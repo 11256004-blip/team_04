@@ -1,0 +1,232 @@
+{% extends 'grades/base.html' %}
+
+{% block title %}查詢修課學生名單 - 教師{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="mb-0">
+                                <i class="fas fa-users"></i> 修課學生名單
+                            </h4>
+                        </div>
+                        <a href="{% url 'grades:teacher_dashboard' %}" class="btn btn-light btn-sm">
+                            <i class="fas fa-arrow-left"></i> 返回儀表板
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- 課程篩選 -->
+                    <div class="mb-4">
+                        <div class="row align-items-end">
+                            <div class="col-md-6">
+                                <label for="courseFilter" class="form-label">
+                                    <strong>篩選課程</strong>
+                                </label>
+                                <form method="get" class="d-flex gap-2">
+                                    <select name="course_id" id="courseFilter" class="form-select" onchange="this.form.submit()">
+                                        <option value="">-- 查看所有課程 --</option>
+                                        {% for course in courses %}
+                                            <option value="{{ course.id }}" {% if selected_course.id == course.id %}selected{% endif %}>
+                                                {{ course.name }} ({{ course.code }})
+                                                - {{ course.enrollments.count }} 名學生
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 統計信息 -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title text-muted">總課程數</h5>
+                                    <h3 class="mb-0">{{ courses.count }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title text-muted">修課學生數</h5>
+                                    <h3 class="mb-0">{{ enrollments.count }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title text-muted">
+                                        {% if selected_course %}
+                                            已輸入成績
+                                        {% else %}
+                                            平均成績
+                                        {% endif %}
+                                    </h5>
+                                    <h3 class="mb-0">
+                                        {% if selected_course %}
+                                            {{ selected_course.enrollments|dictsort:"midterm_score"|length }}
+                                        {% else %}
+                                            --
+                                        {% endif %}
+                                    </h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 學生列表 -->
+                    {% if enrollments %}
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 5%">#</th>
+                                        <th style="width: 20%">學生名稱</th>
+                                        <th style="width: 20%">學號</th>
+                                        <th style="width: 20%">課程</th>
+                                        <th style="width: 12%">期中分數</th>
+                                        <th style="width: 12%">期末分數</th>
+                                        <th style="width: 11%">平均分數</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for enrollment in enrollments %}
+                                        <tr>
+                                            <td>{{ forloop.counter }}</td>
+                                            <td>
+                                                <strong>{{ enrollment.student.get_full_name|default:enrollment.student.username }}</strong>
+                                            </td>
+                                            <td>
+                                                <code>{{ enrollment.student.username }}</code>
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'grades:teacher_course_detail' enrollment.course.id %}" class="text-decoration-none">
+                                                    {{ enrollment.course.name }}
+                                                </a>
+                                                <br>
+                                                <small class="text-muted">({{ enrollment.course.code }})</small>
+                                            </td>
+                                            <td>
+                                                {% if enrollment.midterm_score %}
+                                                    <span class="badge bg-primary">{{ enrollment.midterm_score }}</span>
+                                                {% else %}
+                                                    <span class="text-muted">--</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if enrollment.final_score %}
+                                                    <span class="badge bg-primary">{{ enrollment.final_score }}</span>
+                                                {% else %}
+                                                    <span class="text-muted">--</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if enrollment.average %}
+                                                    <strong class="text-success">{{ enrollment.average|floatformat:2 }}</strong>
+                                                {% else %}
+                                                    <span class="text-muted">未評分</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- 操作按鈕 -->
+                        {% if selected_course %}
+                            <div class="mt-4 d-flex gap-2">
+                                <a href="{% url 'grades:teacher_grade_entry' selected_course.id %}" class="btn btn-primary">
+                                    <i class="fas fa-edit"></i> 編輯此課程成績
+                                </a>
+                                <button type="reset" class="btn btn-secondary" onclick="document.querySelector('select[name=course_id]').value=''; this.form.submit();">
+                                    <i class="fas fa-times"></i> 清除篩選
+                                </button>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="alert alert-warning" role="alert">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>沒有學生修課</strong>
+                            <p class="mb-0">目前沒有學生修課。學生可以通過修課系統註冊你的課程。</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 說明卡片 -->
+            <div class="card mt-4 bg-light">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> 使用說明</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0">
+                        <li><strong>篩選課程:</strong> 從下拉選單選擇特定課程，查看該課程的所有修課學生</li>
+                        <li><strong>查看所有課程:</strong> 選擇「查看所有課程」選項，可看到你所有課程的所有修課學生</li>
+                        <li><strong>編輯成績:</strong> 點擊「編輯此課程成績」按鈕，快速填入期中、期末分數</li>
+                        <li><strong>平均分數:</strong> 系統自動計算期中和期末分數的平均值</li>
+                        <li><strong>未評分:</strong> 表示該學生的期中、期末分數都未輸入</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        border-radius: 0.5rem;
+    }
+
+    .card-header {
+        border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+    }
+
+    .table th {
+        font-weight: 600;
+        color: #495057;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .badge {
+        padding: 0.5em 0.75em;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .btn {
+        border-radius: 0.375rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .form-select {
+        border-radius: 0.375rem;
+        border: 1px solid #ddd;
+    }
+
+    .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+</style>
+{% endblock %}

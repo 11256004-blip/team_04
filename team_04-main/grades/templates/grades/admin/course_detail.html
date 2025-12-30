@@ -1,0 +1,70 @@
+{% extends "grades/base.html" %}
+
+{% block title %}{{ course.name }} - 課程詳情{% endblock %}
+
+{% block content %}
+<h2>📖 課程詳情: {{ course.name }}</h2>
+
+<div class="btn-group">
+    <a href="{% url 'grades:admin_courses' %}" class="btn btn-secondary">← 返回課程列表</a>
+</div>
+
+<!-- Course Info Card -->
+<div class="info-card">
+    <h3>課程信息</h3>
+    <p><strong>課程名稱:</strong> {{ course.name }}</p>
+    <p><strong>課程代碼:</strong> <code>{{ course.code }}</code></p>
+    <p><strong>教師:</strong> 
+        {% if course.teacher %}
+            {{ course.teacher.get_full_name|default:course.teacher.username }}
+        {% else %}
+            <span style="color: #999;">未分配</span>
+        {% endif %}
+    </p>
+    <p><strong>描述:</strong> {{ course.description|default:"無" }}</p>
+    <p><strong>創建日期:</strong> {{ course.created_at|date:"Y-m-d H:i" }}</p>
+    <p><strong>最後更新:</strong> {{ course.updated_at|date:"Y-m-d H:i" }}</p>
+</div>
+
+<!-- Statistics -->
+<div class="info-card" style="text-align: center;">
+    <h3>統計</h3>
+    <p style="font-size: 2em; color: #667eea; font-weight: bold;">{{ enrollments|length }}</p>
+    <p>學生已註冊</p>
+</div>
+
+<!-- Enrolled Students -->
+<h3>已註冊學生</h3>
+{% if enrollments %}
+    <table>
+        <thead>
+            <tr>
+                <th>學生名稱</th>
+                <th>學生用戶名</th>
+                <th>期中成績</th>
+                <th>期末成績</th>
+                <th>平均成績</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for enrollment in enrollments %}
+            <tr>
+                <td>{{ enrollment.student.get_full_name|default:"-" }}</td>
+                <td>{{ enrollment.student.username }}</td>
+                <td>{{ enrollment.midterm_score|default:"-" }}</td>
+                <td>{{ enrollment.final_score|default:"-" }}</td>
+                <td>
+                    {% if enrollment.average %}
+                        <strong>{{ enrollment.average|floatformat:1 }}</strong>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p style="color: #999; text-align: center;">此課程尚無學生註冊</p>
+{% endif %}
+{% endblock %}
