@@ -28,7 +28,7 @@ http://127.0.0.1:8000/admin/
 
 ### 步驟 3: 進入後台
 
-登入成功後看到 Django Admin 首頁
+登入成功後看到 Django Admin 首頁！
 
 ---
 
