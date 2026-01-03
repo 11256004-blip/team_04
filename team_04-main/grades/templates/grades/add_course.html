@@ -1,0 +1,16 @@
+{% extends 'grades/base.html' %}
+
+{% block content %}
+  <a href="{% url 'grades:main' %}" class="btn btn-small" style="margin-bottom: 20px;">⬅️ 回到主頁</a>
+  
+  <h2>➕ 新增課程</h2>
+  
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="btn-group">
+      <button type="submit" class="btn">✅ 新增課程</button>
+      <a href="{% url 'grades:main' %}" class="btn btn-secondary">❌ 取消</a>
+    </div>
+  </form>
+{% endblock %}

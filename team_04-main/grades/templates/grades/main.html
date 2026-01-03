@@ -1,0 +1,145 @@
+{% extends 'grades/base.html' %}
+
+{% block content %}
+  {% if message %}
+    <div class="message error">
+      ⚠️ {{ message }}
+    </div>
+  {% endif %}
+
+  {% if student %}
+    <!-- 學生資訊卡片 -->
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                border-radius: 15px; 
+                padding: 30px; 
+                color: white;
+                margin-bottom: 30px;
+                display: flex;
+                gap: 30px;
+                align-items: center;
+                box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);">
+      
+      <!-- 頭像 -->
+      <div style="flex: 0 0 120px;">
+        <div style="background: rgba(255,255,255,0.2); 
+                    border-radius: 50%; 
+                    width: 120px; 
+                    height: 120px; 
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    overflow: hidden;
+                    border: 3px solid rgba(255,255,255,0.3);">
+          {% if profile.avatar %}
+            <img src="{{ profile.avatar.url }}" alt="頭像" style="width: 100%; height: 100%; object-fit: cover;">
+          {% else %}
+            <div style="font-size: 60px;">👤</div>
+          {% endif %}
+        </div>
+      </div>
+      
+      <!-- 個人資訊 -->
+      <div style="flex: 1;">
+        <h2 style="color: white; border: none; margin-bottom: 10px;">
+          � 歡迎，{{ student.first_name }} {{ student.last_name }}
+        </h2>
+        <p style="font-size: 0.95em; opacity: 0.95;">
+          <strong>用戶名：</strong> {{ student.username }}
+        </p>
+        {% if profile.bio %}
+          <p style="font-size: 0.95em; opacity: 0.9; margin-top: 8px;">
+            {{ profile.bio }}
+          </p>
+        {% endif %}
+        <div class="btn-group" style="margin-top: 15px; gap: 10px;">
+          <a href="{% url 'grades:profile' %}" class="btn" style="background: rgba(255,255,255,0.2); border: 2px solid white; padding: 8px 16px; font-size: 0.9em;">✏️ 編輯資訊</a>
+        </div>
+      </div>
+    </div>
+
+    <h2>👨‍🎓 我的修課資料</h2>
+    
+    <div class="btn-group">
+      <a href="{% url 'grades:add_course' %}" class="btn">➕ 新增課程</a>
+      <a href="{% url 'grades:enroll' %}" class="btn btn-secondary">📝 加選課程</a>
+    </div>
+
+    <h3>📖 修課列表</h3>
+    {% if enrollments %}
+      <table>
+        <thead>
+          <tr>
+            <th>課程名稱</th>
+            <th style="text-align: center;">授課教師</th>
+            <th style="text-align: center;">期中成績</th>
+            <th style="text-align: center;">期末成績</th>
+            <th style="text-align: center;">平均</th>
+            <th style="text-align: center;">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in enrollments %}
+            <tr>
+              <td>
+                <a href="{% url 'grades:course_detail' e.course.id %}">
+                  📚 {{ e.course.name }}
+                </a>
+              </td>
+              <td style="text-align: center;">{{ e.course.teacher }}</td>
+              <td style="text-align: center;">
+                {% if e.midterm_score %}
+                  <strong>{{ e.midterm_score }}</strong>
+                {% else %}
+                  <span style="color: #999;">-</span>
+                {% endif %}
+              </td>
+              <td style="text-align: center;">
+                {% if e.final_score %}
+                  <strong>{{ e.final_score }}</strong>
+                {% else %}
+                  <span style="color: #999;">-</span>
+                {% endif %}
+              </td>
+              <td style="text-align: center;">
+                {% if e.average %}
+                  <strong style="color: #667eea;">{{ e.average|floatformat:2 }}</strong>
+                {% else %}
+                  <span style="color: #999;">-</span>
+                {% endif %}
+              </td>
+              <td style="text-align: center;">
+                <a href="{% url 'grades:unenroll' e.id %}" class="btn btn-danger btn-small" 
+                   onclick="return confirm('確定要退選「{{ e.course.name }}」嗎？')">
+                  ❌ 退選
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="stats-card">
+        <h4>📊 學期總成績</h4>
+        <div class="stats-value">
+          {% if overall_avg %}
+            {{ overall_avg|floatformat:2 }} 分
+          {% else %}
+            尚無成績
+          {% endif %}
+        </div>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon">📭</div>
+        <p style="font-size: 1.2em; color: #666;">尚無修課紀錄</p>
+        <p>點擊上方「加選課程」開始選課吧！</p>
+      </div>
+    {% endif %}
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon">👋</div>
+      <h2>歡迎使用成績系統</h2>
+      <p>請先建立使用者與課程資料。</p>
+    </div>
+  {% endif %}
+{% endblock %}

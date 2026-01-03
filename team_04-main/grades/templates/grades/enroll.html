@@ -1,0 +1,69 @@
+{% extends 'grades/base.html' %}
+
+{% block content %}
+  <a href="{% url 'grades:main' %}" class="btn btn-small" style="margin-bottom: 20px;">⬅️ 回到主頁</a>
+  
+  <h2>📝 加選課程</h2>
+  
+  {% if messages %}
+    {% for message in messages %}
+      <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+  
+  <div style="max-width: 600px; margin: 20px auto;">
+    <div class="info-card">
+      <p>💡 <strong>提示：</strong>請選擇要加選的課程，並可選填期中、期末成績。</p>
+    </div>
+    
+    {% if available_courses %}
+      <form method="post">
+        {% csrf_token %}
+        
+        <p>
+          <label for="{{ form.course.id_for_label }}">{{ form.course.label }}</label>
+          {{ form.course }}
+          {% if form.course.errors %}
+            <div style="color: #c00; font-size: 0.9em; margin-top: 5px;">
+              {{ form.course.errors.0 }}
+            </div>
+          {% endif %}
+        </p>
+        
+        <p>
+          <label for="{{ form.midterm_score.id_for_label }}">{{ form.midterm_score.label }}</label>
+          {{ form.midterm_score }}
+          {% if form.midterm_score.errors %}
+            <div style="color: #c00; font-size: 0.9em; margin-top: 5px;">
+              {{ form.midterm_score.errors.0 }}
+            </div>
+          {% endif %}
+        </p>
+        
+        <p>
+          <label for="{{ form.final_score.id_for_label }}">{{ form.final_score.label }}</label>
+          {{ form.final_score }}
+          {% if form.final_score.errors %}
+            <div style="color: #c00; font-size: 0.9em; margin-top: 5px;">
+              {{ form.final_score.errors.0 }}
+            </div>
+          {% endif %}
+        </p>
+        
+        <div class="btn-group">
+          <button type="submit" class="btn">✅ 確認加選</button>
+          <a href="{% url 'grades:main' %}" class="btn btn-secondary">❌ 取消</a>
+        </div>
+      </form>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon">✅</div>
+        <p style="font-size: 1.1em; color: #666;">已選完所有課程！</p>
+        <p>目前沒有其他課程可選。</p>
+        <a href="{% url 'grades:main' %}" class="btn" style="margin-top: 20px;">返回主頁</a>
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}

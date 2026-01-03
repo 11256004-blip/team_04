@@ -1,0 +1,115 @@
+{% extends 'grades/base.html' %}
+
+{% block content %}
+<div style="max-width: 700px; margin: 0 auto;">
+  <h2>👤 修改個人資訊</h2>
+  
+  {% if messages %}
+    {% for message in messages %}
+      <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+  
+  <div style="display: flex; gap: 40px; margin: 30px 0;">
+    <!-- 左側：頭像預覽 -->
+    <div style="flex: 0 0 200px; text-align: center;">
+      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                  border-radius: 50%; 
+                  width: 150px; 
+                  height: 150px; 
+                  margin: 0 auto 20px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  overflow: hidden;
+                  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);">
+        {% if profile.avatar %}
+          <img src="{{ profile.avatar.url }}" alt="頭像" style="width: 100%; height: 100%; object-fit: cover;">
+        {% else %}
+          <div style="font-size: 80px;">👤</div>
+        {% endif %}
+      </div>
+      <p style="color: #999; font-size: 0.9em;">
+        {% if profile.avatar %}
+          {{ profile.avatar.name|slice:"-20:" }}
+        {% else %}
+          未設定頭像
+        {% endif %}
+      </p>
+    </div>
+    
+    <!-- 右側：表單 -->
+    <div style="flex: 1;">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <p>
+          <label for="{{ form.first_name.id_for_label }}">{{ form.first_name.label }}</label>
+          {{ form.first_name }}
+          {% if form.first_name.errors %}
+            <div style="color: #c00; font-size: 0.9em; margin-top: 5px;">
+              {{ form.first_name.errors.0 }}
+            </div>
+          {% endif %}
+        </p>
+        
+        <p>
+          <label for="{{ form.last_name.id_for_label }}">{{ form.last_name.label }}</label>
+          {{ form.last_name }}
+          {% if form.last_name.errors %}
+            <div style="color: #c00; font-size: 0.9em; margin-top: 5px;">
+              {{ form.last_name.errors.0 }}
+            </div>
+          {% endif %}
+        </p>
+        
+        <p>
+          <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+          {{ form.email }}
+          {% if form.email.errors %}
+            <div style="color: #c00; font-size: 0.9em; margin-top: 5px;">
+              {{ form.email.errors.0 }}
+            </div>
+          {% endif %}
+        </p>
+        
+        <p>
+          <label for="{{ form.avatar.id_for_label }}">{{ form.avatar.label }}</label>
+          {{ form.avatar }}
+          {% if form.avatar.errors %}
+            <div style="color: #c00; font-size: 0.9em; margin-top: 5px;">
+              {{ form.avatar.errors.0 }}
+            </div>
+          {% endif %}
+          <small style="color: #666;">支援 JPG, PNG, GIF 格式，建議大小 200x200px</small>
+        </p>
+        
+        <p>
+          <label for="{{ form.bio.id_for_label }}">{{ form.bio.label }}</label>
+          {{ form.bio }}
+          {% if form.bio.errors %}
+            <div style="color: #c00; font-size: 0.9em; margin-top: 5px;">
+              {{ form.bio.errors.0 }}
+            </div>
+          {% endif %}
+        </p>
+        
+        <div class="btn-group" style="margin-top: 30px;">
+          <button type="submit" class="btn">💾 保存修改</button>
+          <a href="{% url 'grades:main' %}" class="btn btn-secondary">❌ 取消</a>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- 帳戶資訊 -->
+  <div class="info-card" style="margin-top: 40px;">
+    <h4>帳戶資訊</h4>
+    <p><strong>用戶名：</strong> {{ user.username }}</p>
+    <p><strong>全名：</strong> {{ user.first_name }} {{ user.last_name }}</p>
+    <p><strong>加入時間：</strong> {{ user.date_joined|date:"Y-m-d H:i" }}</p>
+  </div>
+</div>
+{% endblock %}
