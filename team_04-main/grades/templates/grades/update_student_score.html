@@ -1,0 +1,157 @@
+{% extends 'grades/base.html' %}
+{% load static %}
+
+{% block title %}編輯成績{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h2 class="card-title mb-4">✏️ 編輯學生成績</h2>
+
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <!-- 學生和課程資訊 -->
+                    <div class="card mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-uppercase text-muted" style="color: rgba(255, 255, 255, 0.7);">學生</h6>
+                                    <p class="h5 mb-0">{{ enrollment.student.last_name }}{{ enrollment.student.first_name }}</p>
+                                    <small>帳號: {{ enrollment.student.username }}</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-uppercase text-muted" style="color: rgba(255, 255, 255, 0.7);">課程</h6>
+                                    <p class="h5 mb-0">{{ enrollment.course.name }}</p>
+                                    <small>{{ enrollment.course.code }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="POST" novalidate>
+                        {% csrf_token %}
+
+                        <!-- 期中成績 -->
+                        <div class="form-group mb-4">
+                            <label for="id_midterm_score" class="form-label">📝 期中成績</label>
+                            <div class="input-group">
+                                {{ form.midterm_score }}
+                                <span class="input-group-text">/ 100</span>
+                            </div>
+                            {% if form.midterm_score.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.midterm_score.errors|join:", " }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">輸入 0-100 之間的數字，或留空表示未評分</small>
+                        </div>
+
+                        <!-- 期末成績 -->
+                        <div class="form-group mb-4">
+                            <label for="id_final_score" class="form-label">📝 期末成績</label>
+                            <div class="input-group">
+                                {{ form.final_score }}
+                                <span class="input-group-text">/ 100</span>
+                            </div>
+                            {% if form.final_score.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.final_score.errors|join:", " }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">輸入 0-100 之間的數字，或留空表示未評分</small>
+                        </div>
+
+                        <!-- 平均成績顯示 -->
+                        <div class="card bg-light mb-4">
+                            <div class="card-body">
+                                <h6 class="card-title">平均成績</h6>
+                                {% if enrollment.average %}
+                                    <p class="h4 mb-0">
+                                        <span class="badge" style="background-color: {% if enrollment.average >= 80 %}#4CAF50{% elif enrollment.average >= 70 %}#2196F3{% elif enrollment.average >= 60 %}#FF9800{% else %}#F44336{% endif %}; padding: 0.5rem 1rem; font-size: 1.2rem;">
+                                            {{ enrollment.average|floatformat:1 }}
+                                        </span>
+                                    </p>
+                                {% else %}
+                                    <p class="text-muted">尚未計算</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- 操作按鈕 -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success btn-lg flex-grow-1">
+                                ✅ 保存成績
+                            </button>
+                            <a href="{% url 'grades:course_students' enrollment.course.id %}" class="btn btn-secondary btn-lg">
+                                ❌ 取消
+                            </a>
+                        </div>
+                    </form>
+
+                    <!-- 等級說明 -->
+                    <div class="alert alert-info mt-4">
+                        <h6>📊 等級說明:</h6>
+                        <table class="mb-0 small">
+                            <tr>
+                                <td><span class="badge" style="background-color: #4CAF50; padding: 0.3rem 0.6rem;">A</span></td>
+                                <td>80 分以上</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge" style="background-color: #2196F3; padding: 0.3rem 0.6rem;">B</span></td>
+                                <td>70 - 79 分</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge" style="background-color: #FF9800; padding: 0.3rem 0.6rem;">C</span></td>
+                                <td>60 - 69 分</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge" style="background-color: #F44336; padding: 0.3rem 0.6rem;">D</span></td>
+                                <td>60 分以下</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control, .form-control:focus {
+        border-radius: 0.5rem;
+    }
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1.1rem;
+    }
+    .input-group-text {
+        background-color: #f8f9fa;
+        border-color: #ddd;
+    }
+    .invalid-feedback {
+        color: #dc3545;
+        margin-top: 0.25rem;
+        font-size: 0.875rem;
+    }
+    .badge {
+        color: white;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}

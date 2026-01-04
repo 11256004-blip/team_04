@@ -1,0 +1,222 @@
+{% extends "grades/base.html" %}
+
+{% block content %}
+<div class="container">
+  <div class="header">
+    <h1>{{ course.name }} - 課程留言</h1>
+    <a href="{% url 'grades:main' %}" class="btn btn-light">返回課程列表</a>
+  </div>
+
+  <div class="content">
+    <!-- 課程基本資訊 -->
+    <div class="course-info">
+      <p><strong>課程代碼：</strong> {{ course.code }}</p>
+      <p><strong>授課教師：</strong> {{ course.get_teacher_name }}</p>
+      {% if course.description %}
+      <p><strong>課程描述：</strong> {{ course.description }}</p>
+      {% endif %}
+    </div>
+
+    <!-- 成功提示訊息 -->
+    {% if messages %}
+    <div class="alerts">
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- 發表留言區域 -->
+    <div class="add-comment-section">
+      <h3>發表新留言</h3>
+      <form method="post" class="comment-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">發表留言</button>
+      </form>
+    </div>
+
+    <!-- 留言列表 -->
+    <div class="comments-section">
+      <h3>全部留言 ({{ comments.count }})</h3>
+      
+      {% if comments %}
+        <div class="comments-list">
+          {% for comment in comments %}
+          <div class="comment-item">
+            <div class="comment-header">
+              <strong>{{ comment.student.get_full_name|default:comment.student.username }}</strong>
+              <span class="comment-date">{{ comment.created_at|date:"Y-m-d H:i" }}</span>
+              {% if comment.created_at != comment.updated_at %}
+              <span class="comment-edited">(已編輯 {{ comment.updated_at|date:"Y-m-d H:i" }})</span>
+              {% endif %}
+            </div>
+            
+            <div class="comment-content">
+              {{ comment.content|linebreaks }}
+            </div>
+
+            {% if comment.student == user %}
+            <div class="comment-actions">
+              <a href="{% url 'grades:edit_comment' comment.id %}" class="btn btn-sm btn-warning">編輯</a>
+              <a href="{% url 'grades:delete_comment' comment.id %}" class="btn btn-sm btn-danger" onclick="return confirm('確定要刪除此留言嗎？')">刪除</a>
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="no-comments">目前還沒有任何留言，來發表第一則留言吧！</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<style>
+  .course-info {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    border-left: 4px solid #667eea;
+  }
+
+  .course-info p {
+    margin-bottom: 10px;
+  }
+
+  .add-comment-section {
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    border-left: 4px solid #28a745;
+  }
+
+  .add-comment-section h3 {
+    margin-bottom: 15px;
+    color: #333;
+  }
+
+  .comment-form {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .comment-form p {
+    margin-bottom: 15px;
+  }
+
+  .comment-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+  }
+
+  .comment-form textarea {
+    resize: vertical;
+  }
+
+  .comments-section {
+    margin-top: 30px;
+  }
+
+  .comments-section h3 {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #667eea;
+  }
+
+  .comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .comment-item {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    transition: all 0.3s ease;
+  }
+
+  .comment-item:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-color: #667eea;
+  }
+
+  .comment-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+
+  .comment-header strong {
+    color: #667eea;
+    font-size: 1.05em;
+  }
+
+  .comment-date {
+    font-size: 0.9em;
+    color: #6c757d;
+  }
+
+  .comment-edited {
+    font-size: 0.85em;
+    color: #ffc107;
+    font-style: italic;
+  }
+
+  .comment-content {
+    margin-bottom: 15px;
+    line-height: 1.6;
+    color: #333;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  .comment-actions {
+    display: flex;
+    gap: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #dee2e6;
+  }
+
+  .no-comments {
+    text-align: center;
+    padding: 40px;
+    color: #6c757d;
+    font-style: italic;
+    background: #f8f9fa;
+    border-radius: 8px;
+  }
+
+  .alerts {
+    margin-bottom: 20px;
+  }
+
+  .alert {
+    padding: 15px 20px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border-left: 4px solid;
+  }
+
+  .alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border-color: #28a745;
+  }
+
+  .alert-error, .alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+  }
+</style>
+{% endblock %}
